@@ -1,23 +1,40 @@
 process.env.GOOGLE_API_KEY = process.env.API_GOOGLE_KEY;
 
+//Electron Stuff
 const electron = require('electron');
-require('dotenv').config();
-const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
+const app = electron.app;
+
+require('dotenv').config();
+
+//Config for application
+var config = require('./options.json');
 
 const path = require('path');
 const url = require('url');
 
+const fs = require('fs');
+
+console.log("Is first run: " + config.firstRun);
+
 let mainWindow;
 
 function createWindow() {
-    mainWindow = new BrowserWindow({width: 800, height: 480});
+
+    mainWindow = new BrowserWindow({ 
+        width: 800, 
+        height: 480,
+        webPreferences: {
+            webSecurity: false
+          }
+    });
+
 
     const startUrl = process.env.ELECTRON_START_URL || url.format({
-            pathname: path.join(__dirname, '/../build/index.html'),
-            protocol: 'file:',
-            slashes: true
-        });
+        pathname: path.join(__dirname, '/../build/index.html'),
+        protocol: 'file:',
+        slashes: true
+    });
     mainWindow.loadURL(startUrl);
     mainWindow.webContents.openDevTools();
 
