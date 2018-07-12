@@ -1,7 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
+import GoogleMapReact from "google-map-react"
 
 class Map extends Component {
-
+    static defaultProps = {
+        center: { lat: 37.005782, lng: -121.568275 },
+        zoom: 11
+      }
     constructor(props) {
         super(props);
         this.state = {
@@ -11,19 +15,21 @@ class Map extends Component {
 
 
     componentDidMount() {
-        //Allowing us to use Google Maps API's
-        var js_file = document.createElement('script');
-        js_file.type = 'text/javascript';
-        js_file.src = 'https://maps.googleapis.com/maps/api/js?&key=' + window.process.env.GOOGLE_API_KEY;
-        document.getElementsByTagName('head')[0].appendChild(js_file);
 
         navigator.geolocation.getCurrentPosition(
             //onSuccess
             (pos) => {
+                // var map = new google.maps.Map(
+                //     document.getElementById("map"),
+                //     {
+                //         center: {lat: pos.coords.latitude, lng:pos.coords.longitude},
+                //         zoom: 8
+                //     }
+                // );
                 this.setState({
                     userLocation: pos
                 })
-            }, 
+            },
             //onError
             (error) => {
                 window.alert("Could not auto find location, using address in .env");
@@ -39,12 +45,18 @@ class Map extends Component {
     }
 
     render() {
+        // let lat = (this.state.userLocation == null) ? "" : this.state.userLocation.coords.latitude;
 
-        let lat = (this.state.userLocation == null) ? ""  : this.state.userLocation.coords.latitude;
-
-        let long =(this.state.userLocation == null) ? ""  : this.state.userLocation.coords.longitude;
+        // let long = (this.state.userLocation == null) ? "" : this.state.userLocation.coords.longitude;
         return (
-            <div> {lat}    {long}</div>
+            <div style={{ height: '100vh', width: '100%' }}>
+            <GoogleMapReact
+              bootstrapURLKeys={{ key: window.process.env.GOOGLE_API_KEY }}
+              defaultCenter={this.props.center}
+              defaultZoom={this.props.zoom}
+            >
+            </GoogleMapReact>
+          </div>
         )
     };
 }

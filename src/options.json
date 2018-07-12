@@ -1,3 +1,6 @@
 {
-  "firstRun": false
+  "firstRun": false,
+  "spotifyAPIKey": null,
+  "currentAddress": null,
+  "addressShortcuts": []
 }
