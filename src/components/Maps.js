@@ -1,64 +1,121 @@
-import React, { Component } from "react";
-import GoogleMapReact from "google-map-react"
+/* global google */
+import React from "react";
+import { Button } from "react-bootstrap"
+import options from "../options.json"
 
-class Map extends Component {
-    static defaultProps = {
-        center: { lat: 37.005782, lng: -121.568275 },
-        zoom: 11
-      }
-    constructor(props) {
-        super(props);
-        this.state = {
-            userLocation: null
-        };
-    }
+const { compose, withProps, lifecycle } = require("recompose");
+const {
+  withScriptjs,
+  withGoogleMap,
+  GoogleMap,
+  DirectionsRenderer,
+} = require("react-google-maps");
 
+const googleMapsURL = "https://maps.googleapis.com/maps/api/js?key=" + window.process.env.GOOGLE_API_KEY + "&v=3.exp&libraries=geometry,drawing,places"
+
+let MapWithADirectionsRenderer = compose(
+  withProps({
+    googleMapURL: googleMapsURL,
+    loadingElement: <div style={{ height: `100%` }} />,
+    containerElement: <div style={{ height: `400px` }} />,
+    mapElement: <div style={{ height: `100%` }} />,
+  }),
+  withScriptjs,
+  withGoogleMap,
+  lifecycle({
+
+    drawRoute(destination){
+      let DirectionsService = new google.maps.DirectionsService();
+
+      let userLat, userLong;
+      
+      navigator.geolocation.getCurrentPosition(
+        //onSuccess
+        (pos) => {
+          userLat = pos.coords.latitude;
+          userLong = pos.coords.longitude;
+
+          DirectionsService.route({
+            origin: new google.maps.LatLng(userLat, userLong),
+            destination: destination,
+            travelMode: google.maps.TravelMode.DRIVING,
+          }, (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              this.setState({
+                directions: result,
+              });
+            } else {
+              console.error(`error fetching directions ${result}`);
+            }
+          });
+        }
+      )
+    },
 
     componentDidMount() {
+      const DirectionsService = new google.maps.DirectionsService();
 
-        navigator.geolocation.getCurrentPosition(
-            //onSuccess
-            (pos) => {
-                // var map = new google.maps.Map(
-                //     document.getElementById("map"),
-                //     {
-                //         center: {lat: pos.coords.latitude, lng:pos.coords.longitude},
-                //         zoom: 8
-                //     }
-                // );
-                this.setState({
-                    userLocation: pos
-                })
-            },
-            //onError
-            (error) => {
-                window.alert("Could not auto find location, using address in .env");
-                /*
-                @TODO: Implement first time setup for user to add HOME address and then geocode and store
-                lat and long in .env 
-                */
-                //call setstate with user provided address
-                //add visual indicator to show cannot access current location
-                console.log(error);
-            });
+      this.drawRoute("UCSC");
+    },
 
+    componentDidUpdate(prevProps, prevState){
+      if (prevProps.destination !== this.props.destination){
+        this.drawRoute(this.props.destination)
+      }
     }
 
-    render() {
-        // let lat = (this.state.userLocation == null) ? "" : this.state.userLocation.coords.latitude;
+  })
+)(props =>
+  <GoogleMap
+    defaultZoom={7}
+    defaultCenter={new google.maps.LatLng(41.8507300, -87.6512600)}
+  >
+    {props.directions && <DirectionsRenderer directions={props.directions} />}
+  </GoogleMap>
+);
 
-        // let long = (this.state.userLocation == null) ? "" : this.state.userLocation.coords.longitude;
-        return (
-            <div style={{ height: '100vh', width: '100%' }}>
-            <GoogleMapReact
-              bootstrapURLKeys={{ key: window.process.env.GOOGLE_API_KEY }}
-              defaultCenter={this.props.center}
-              defaultZoom={this.props.zoom}
-            >
-            </GoogleMapReact>
-          </div>
-        )
-    };
+
+class Map extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.updateMap = this.updateMap.bind(this)
+
+    this.state = {
+      origin: null,
+      destination: null
+    }
+  }
+
+  updateMap(address) {
+    console.log(address);
+    this.setState({
+      destination: address
+    });
+  }
+
+  createAddressButton(address) {
+    return (
+      <Button bsStyle="primary" onClick={() => this.updateMap(address)} key={address} > {address} </Button>
+    )
+  }
+
+  render() {
+
+    let allButtons = options.addressShortcuts.map(address => this.createAddressButton(address));
+
+    return (
+
+      <div>
+        {allButtons}
+
+        <MapWithADirectionsRenderer destination={this.state.destination} />
+
+      </div>
+    )
+  }
 }
+
 
 export default Map;
