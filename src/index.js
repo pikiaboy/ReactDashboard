@@ -23,6 +23,7 @@ function loadNavBar() {
   );
 }
 
+//@TODO: If time is after 7pm? use dark theme
 function loadHomePage() {
   ReactDOM.render(
     <Grid>

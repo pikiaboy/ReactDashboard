@@ -1,7 +1,9 @@
 /* global google */
 import React from "react";
-import { Button } from "react-bootstrap"
-import options from "../options.json"
+import { Button } from "react-bootstrap";
+import options from "../options.json";
+
+const fs = window.require("fs")
 
 const { compose, withProps, lifecycle } = require("recompose");
 const {
@@ -17,49 +19,89 @@ let MapWithADirectionsRenderer = compose(
   withProps({
     googleMapURL: googleMapsURL,
     loadingElement: <div style={{ height: `100%` }} />,
-    containerElement: <div style={{ height: `400px` }} />,
+    containerElement: <div style={{ height: `300px`, width: "300px" }} />,
     mapElement: <div style={{ height: `100%` }} />,
   }),
   withScriptjs,
   withGoogleMap,
   lifecycle({
 
-    drawRoute(destination){
+    //saves directions to disk in order for other components to use
+    saveDirections(directions) {
+      let dest = directions.request.destination.query
+      try {
+        let oldJSON = JSON.parse(fs.readFileSync("directions.json"));
+
+        oldJSON[dest] = directions;
+
+        let json = JSON.stringify(oldJSON);
+        fs.writeFileSync("directions.json", json, "utf8", console.log("Directions saved for " + directions.request.destination.query));
+
+      } catch (e) {
+        console.log("could not read old json file");
+        let jsonFile = {};
+        jsonFile[dest] = directions;
+        fs.writeFileSync("directions.json", JSON.stringify(jsonFile), "utf8", console.log("Directions saved for " + directions.request.destination.query));
+      }
+
+
+    },
+
+    drawRoute(destination) {
       let DirectionsService = new google.maps.DirectionsService();
 
       let userLat, userLong;
-      
-      navigator.geolocation.getCurrentPosition(
-        //onSuccess
-        (pos) => {
-          userLat = pos.coords.latitude;
-          userLong = pos.coords.longitude;
 
-          DirectionsService.route({
-            origin: new google.maps.LatLng(userLat, userLong),
-            destination: destination,
-            travelMode: google.maps.TravelMode.DRIVING,
-          }, (result, status) => {
-            if (status === google.maps.DirectionsStatus.OK) {
-              this.setState({
-                directions: result,
-              });
-            } else {
-              console.error(`error fetching directions ${result}`);
-            }
-          });
-        }
-      )
+      if (options.currentAddress != null) {
+        DirectionsService.route({
+          origin: options.currentAddress,
+          destination: destination,
+          travelMode: google.maps.TravelMode.DRIVING,
+        }, (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK) {
+            this.setState({
+              directions: result,
+            });
+            this.saveDirections(result);
+          } else {
+            console.error(`error fetching directions ${result}`);
+            console.log(result)
+          }
+        });
+      } else {
+        navigator.geolocation.getCurrentPosition(
+          //onSuccess
+          (pos) => {
+            userLat = pos.coords.latitude;
+            userLong = pos.coords.longitude;
+
+            DirectionsService.route({
+              origin: new google.maps.LatLng(userLat, userLong),
+              destination: destination,
+              travelMode: google.maps.TravelMode.DRIVING,
+            }, (result, status) => {
+              if (status === google.maps.DirectionsStatus.OK) {
+                this.setState({
+                  directions: result,
+                });
+                this.saveDirections(result);
+              } else {
+                console.error(`error fetching directions ${result}`);
+              }
+            });
+          }
+        )
+
+      }
+
     },
 
     componentDidMount() {
-      const DirectionsService = new google.maps.DirectionsService();
-
       this.drawRoute("UCSC");
     },
 
-    componentDidUpdate(prevProps, prevState){
-      if (prevProps.destination !== this.props.destination){
+    componentDidUpdate(prevProps, prevState) {
+      if (prevProps.destination !== this.props.destination) {
         this.drawRoute(this.props.destination)
       }
     }
@@ -108,10 +150,10 @@ class Map extends React.Component {
     return (
 
       <div>
-        {allButtons}
 
         <MapWithADirectionsRenderer destination={this.state.destination} />
 
+        {allButtons}
       </div>
     )
   }
