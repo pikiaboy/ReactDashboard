@@ -1,6 +1,12 @@
 {
   "firstRun": false,
   "spotifyAPIKey": null,
-  "currentAddress": null,
-  "addressShortcuts": []
+  "currentAddress": "",
+  "addressShortcuts": [],
+  "cityCodes": {
+    "Santa_Cruz": "5393068",
+    "Gilroy": "5352214",
+    "San_Jose": "5392171"
+  }
+
 }

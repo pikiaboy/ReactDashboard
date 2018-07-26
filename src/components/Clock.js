@@ -1,35 +1,64 @@
-import React, { Component } from 'react';
-
-
+import React, { Component } from "react";
 
 var style = {
   borderStyle: "solid",
   textAlign: "center",
-  fontFamily: 'Courier New'
+  fontFamily: "Courier New"
 };
 
-function CurrDate(props) {
+function CurrTime(props) {
   return <h2 style={props.style}> {props.date.toLocaleTimeString()}</h2>;
+}
+
+function CurrDate(props) {
+  let numMonth = props.date.getMonth();
+  let numDay = props.date.getDate();
+  let numYear = props.date.getFullYear();
+  let date = props.date.toDateString();
+
+  let numDate = numMonth + "/" + numDay + "/" + numYear;
+
+  let dateStyle = {
+    borderStyle: "solid",
+    textAlign: "center",
+    fontFamily: "Courier New",
+    height: "100px",
+    lineHeight: "100px"
+  }
+
+  return (
+    <div style={dateStyle}>
+      <h5> {numDate} </h5>
+      <h3> {date} </h3>
+    </div>
+  )
 }
 
 class Clock extends Component {
   constructor(props) {
-    style["height"] = props.size;
-    style["lineHeight"] = props.size;
+    if (props.option === "time") {
+      style.height = props.size;;
+      style.lineHeight = props.size;;
+    }
+
     super(props);
     this.state = { date: new Date() };
   }
 
   componentDidMount() {
-    this.timerID = setInterval(
-      () => this.tick(),
-      1000
-    );
+    if (this.props.option === "time") {
+      this.timerID = setInterval(
+        () => this.tick(),
+        1000
+      );
+    }
   }
 
 
   componentWillUnmount() {
-    clearInterval(this.timerID);
+    if (this.props.option === "time") {
+      clearInterval(this.timerID);
+    }
   }
 
   tick() {
@@ -39,11 +68,21 @@ class Clock extends Component {
   }
 
   render() {
-    return (
-      <div>
+
+
+    if (this.props.option === "time") {
+      return (
+        <div>
+          <CurrTime date={this.state.date} style={style} />
+        </div>
+      )
+    }
+    if (this.props.option === "date") {
+      return (
         <CurrDate date={this.state.date} style={style} />
-      </div>
-    )
+      )
+    }
+
   }
 }
 
