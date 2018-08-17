@@ -13,7 +13,7 @@ const {
   DirectionsRenderer,
 } = require("react-google-maps");
 
-const googleMapsURL = "https://maps.googleapis.com/maps/api/js?key=" + "AIzaSyCFbh0ORX2EX4STGELbDJck5ffK6DjrkrE" + "&v=3.exp&libraries=geometry,drawing,places"
+const googleMapsURL = "https://maps.googleapis.com/maps/api/js?key=" + "GOOGLECODE" + "&v=3.exp&libraries=geometry,drawing,places"
 
 let MapWithADirectionsRenderer = compose(
   withProps({

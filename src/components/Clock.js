@@ -11,7 +11,7 @@ function CurrTime(props) {
 }
 
 function CurrDate(props) {
-  let numMonth = props.date.getMonth();
+  let numMonth = props.date.getMonth() + 1;
   let numDay = props.date.getDate();
   let numYear = props.date.getFullYear();
   let date = props.date.toDateString();

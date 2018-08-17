@@ -1,7 +1,7 @@
 /**React Stuff**/
 import React from "react";
 import ReactDOM from "react-dom";
-import { Grid, Row, Col , Clearfix} from "react-bootstrap";
+import { Grid, Row, Col} from "react-bootstrap";
 
 /*Components*/
 import Clock from "./components/Clock";
@@ -27,11 +27,6 @@ function loadHomePage() {
     top: 20
   }
 
-  let offset = {
-    position: "absolute",
-    left: 25
-  }
-
   ReactDOM.render(
     <Grid>
    
@@ -48,9 +43,9 @@ function loadHomePage() {
       </Row>
 
       <Row className="show-grid"> 
-        <Clearfix style={offset}>
+        <Col xs={6}>
           <Weather cityCodes={configOptions.cityCodes}/>
-         </Clearfix>
+        </Col>
       </Row>
    
     </Grid>,
