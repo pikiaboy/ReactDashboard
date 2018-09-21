@@ -18,3 +18,4 @@ npm-debug.log
 .env
 create-react-app-readme.md
 directions.json
+\.vscode/

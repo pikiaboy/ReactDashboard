@@ -14,6 +14,11 @@ import "./index.css";
 import "./config";
 var configOptions = require("./options.json");
 
+var weatherStyle = {
+  borderStyle: "solid solid hidden solid",
+  fontFamily: "Courier New"
+};
+
 // function loadNavBar() {
 //   ReactDOM.render(
 //     <NavBar />,
@@ -43,7 +48,7 @@ function loadHomePage() {
       </Row>
 
       <Row className="show-grid"> 
-        <Col xs={6}>
+        <Col style={weatherStyle} xs={6} md={6}>
           <Weather cityCodes={configOptions.cityCodes}/>
         </Col>
       </Row>
