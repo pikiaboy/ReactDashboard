@@ -1,5 +1,5 @@
 /**
- * Each Weather Block is a 5 day forecast for a single city. 
+ * Each Weather Block is a 5 day forecast for a single city.
  */
 import React, { Component } from "react";
 import { Row, Col } from "react-bootstrap";
@@ -13,9 +13,9 @@ var style = {
 
 
 /**
- * 
+ *
  * city -> The name of the city
- * currentWeather -> 
+ * currentWeather ->
  *                  "icon" -> Icon name of current name
  *                  "weatherDescript" -> Description of current weather
  *                  "sunrise" -> Current time of sunrise in UTC
@@ -33,27 +33,27 @@ class WeatherBlocks extends Component {
      * @return Array of the next 4 forecast days
      */
     getForecastDates(forecastData) {
-        let data = [];
+        // let data = [];
 
-        let today = new Date();
-        let day = today.getDate();
+        // let today = new Date();
+        // let day = today.getDate();
 
-        //Index used to find the next date in the forecast
-        let i = 0;
+        // //Index used to find the next date in the forecast
+        // let i = 0;
 
-        for (i; i < forecastData.length; i++) {
-            //Spllitting the DT to find the day
-            let forecastDate = forecastData[i].dt_txt.split(/[^\d]+/gm);
-            if (forecastDate[2] != day)
-                break;
-        }
+        // for (i; i < forecastData.length; i++) {
+        //     //Spllitting the DT to find the day
+        //     let forecastDate = forecastData[i].dt_txt.split(/[^\d]+/gm);
+        //     if (forecastDate[2] !== day)
+        //         break;
+        // }
 
-        //ForecastData has ~8 weather data per day.
-        for (i; i < forecastData.length;i += 5){
-            data[i] = forecastData[i];
-        }
+        // //ForecastData has ~8 weather data per day.
+        // for (i; i < forecastData.length;i += 5){
+        //     data[i] = forecastData[i];
+        // }
 
-        console.log(data);
+        // console.log(data);
 
 
     }

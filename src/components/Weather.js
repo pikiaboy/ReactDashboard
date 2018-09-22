@@ -1,85 +1,107 @@
 /**
- * Contains weather Blocks for cities. 
+ * Contains weather Blocks for cities.
  */
 import React, { Component } from "react";
 import WeatherBlocks from "./WeatherBlocks";
 
 import axios from "axios";
-const fs = window.require("fs");
 
 
-axios.defaults.baseURL = "http://api.openweathermap.org/data/2.5";
+axios.defaults.baseURL = "http://li893-35.members.linode.com:8081";
 
 var style = {
     fontFamily: "Courier New"
 };
 
+
 class Weather extends Component {
 
-    //Takes in the city codes from props.
-    //Makes a GET request to openweatherapi to grab the new data and save it to file.
-    //*NOTE* Use this as a promise to make sure everything is written to file properly.
-    updateForecast(){
-        let url = "forecast?id=<CITYID>&units=imperial&appid=<APPID>";
+    /**
+     *  Takes in the city codes from props.
+     *  Makes a GET request to backend to grab the new data
+     * @param cityCodes
+     * @returns JSON of forecast data
+     */
+    updateForecast() {
 
-        url = url.replace(/<APPID>/i, "APPID");
-        
-        let cityIDs = this.props.cityCodes;
+        let cityIDs = "";
 
-
-        let forecastRequest = [];
-
-        Object.keys(cityIDs).forEach(code => {
-            let cityUrl = url.replace(/<CITYID>/i, cityIDs[code.toString()]);
-
-            forecastRequest.push(axios.get(cityUrl));
-        });
-
-        Promise.all(forecastRequest)
-        .then(function (response) {
-           let forecastData = {};
-           response.forEach(element => {
-               forecastData[element.data.city.name] = element.data;
-           });
-           fs.writeFileSync("forecastData.json",JSON.stringify(forecastData, null, 4));
-        });
-
-    }
-
-    updateCurrentWeather(){
-        let url = "group?id=<CITYID>&units=imperial&appid=<APPID>";
-        
-        url = url.replace(/<APPID>/i, "APPID");
-        
-        let cityIDs = this.props.cityCodes;
-        let codes = "";
-        
-        for (let city in cityIDs){
-            codes = codes + cityIDs[city] + ",";
-        }
-
-        codes = codes.slice(0, -1);
-        
-        url = url.replace(/<CITYID>/i,codes);
-
-        let currentWeather = {};
-
-        axios.get(url)
-        .then(function (response) {
-            response.data.list.forEach(city => {
-                currentWeather[city.name] = city;
-            });
-            fs.writeFileSync("currentWeatherData.json",JSON.stringify(currentWeather, null, 4));   
+        Object.keys(this.props.cityCodes).forEach(cityId => {
+            cityIDs += this.props.cityCodes[cityId] + ",";
         })
 
+        cityIDs = cityIDs.slice(0, -1);
+
+        axios.get("/weather/currentWeather?cityId=" + cityIDs)
+            .then(function (response) {
+                return response.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+                return {};
+            })
 
     }
 
-    componentDidMount(){
-        this.updateForecast();
-        this.updateCurrentWeather();
+    /**
+     * Heleper method for updateCurrentWeather()
+     * @param {*} currentWeatherData
+     *
+     * @returns {*} Array of WeatherBlocks
+     */
+    populateCurrentWeather(currentWeatherData){
+        let weatherBlocks = [];
 
-        this.forceUpdate();
+        for (let i = 0; i < currentWeatherData.cnt; i++) {
+
+            let cityName = currentWeatherData.list[i].name;
+
+            let props = {};
+
+            let currentWeather = {};
+
+            currentWeather["icon"] = currentWeatherData.list[i].weather["0"].icon;
+            currentWeather["weatherDescript"] = currentWeatherData.list[i].weather["0"].description
+            currentWeather["sunrise"] = currentWeatherData.list[i].sys.sunrise;
+            currentWeather["sunset"] = currentWeatherData.list[i].sys.sunset;
+            currentWeather["temp"] = currentWeatherData.list[i].main.temp;
+            currentWeather["minTemp"] = currentWeatherData.list[i].main.temp_min;
+            currentWeather["maxTemp"] = currentWeatherData.list[i].main.temp_max;
+            currentWeather["dt"] = currentWeatherData.list[i].dt;
+
+            props["city"] = cityName;
+            props["currentWeather"] = currentWeather;
+            //props["forecastData"] = forecastData[cityName].list;
+
+            weatherBlocks.push(<WeatherBlocks key={i} {...props} />);
+        }
+
+        return weatherBlocks;
+    }
+
+    /**
+     *  Takes in the city codes from props.
+     *  Makes a GET request to backend to grab the new data
+     * @param cityCodes
+     * @returns Promise that returns a JSON of the data.
+     */
+    updateCurrentWeather() {
+
+        let cityIDs = "";
+
+        Object.keys(this.props.cityCodes).forEach(cityId => {
+            cityIDs += this.props.cityCodes[cityId] + ",";
+        })
+
+        cityIDs = cityIDs.slice(0, -1);
+
+        return axios.get("/weather/currentWeather?cityId=" + cityIDs)
+            .then(response =>{
+                return this.populateCurrentWeather(response.data);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     /**
@@ -88,64 +110,56 @@ class Weather extends Component {
      * @return: string
      */
     hashCode(s) {
-        var h = 0, l = s.length, i = 0;
-        if ( l > 0 )
-          while (i < l)
-            h = (h << 5) - h + s.charCodeAt(i++) | 0;
+        var h = 0,
+            l = s.length,
+            i = 0;
+        if (l > 0)
+            while (i < l)
+                h = (h << 5) - h + s.charCodeAt(i++) | 0;
         return h;
-      };
+    };
+
+
+
+    /**
+     * React Lifecycle Methods
+     */
+
+    constructor(props){
+        super(props);
+        this.state = {
+            weatherBlocks: []
+        };
+    }
+
+    componentDidMount(){
+        let currentComponent = this;
+
+        this.updateCurrentWeather()
+            .then(function (data) {
+                currentComponent.setState({
+                    weatherBlocks: data
+                })
+            })
+            .catch(error => {
+                console.log(error);
+            });
+            
+    }
+
 
     render() {
-        let forecastData;
-        let currentWeatherData;
-        let thisComponent = this;
-        try {
-            forecastData = JSON.parse(fs.readFileSync("forecastData.json"));
-            currentWeatherData = JSON.parse(fs.readFileSync("currentWeatherData.json"))
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                console.log('File not found!');
+        return (
+            !this.state.weatherBlocks ? 
+                <div style={style}>
+                    loading...
+                </div>
+                : 
+                <div style={style}>
+                    {this.state.weatherBlocks}
+                </div>
 
-                /**
-                 * Can instead encapsulate entire block in while(file_does_not_exist), but it makes the
-                 * loading animation super choppy
-                 */
-                setTimeout(function(){thisComponent.componentDidMount();}, 3000); 
-                
-                return (<h2 style={style}> Loading... </h2>) //@TODO: Use a loading animation instead. 
-              } else {
-                throw err;
-              }
-        }
-        
-        let weatherBlocks = [];
-
-        //@TODO: To optimize for PTL1, can make an ajax loader that would hit multiple CDN's.
-        for (let cityName in forecastData){
-            let props = {};
-
-            let currentWeather = {};
-
-            currentWeather["icon"] = currentWeatherData[cityName].weather["0"].icon;
-            currentWeather["weatherDescript"] = currentWeatherData[cityName].weather["0"].description
-            currentWeather["sunrise"] = currentWeatherData[cityName].sys.sunrise;
-            currentWeather["sunset"] = currentWeatherData[cityName].sys.sunset;
-            currentWeather["temp"] = currentWeatherData[cityName].main.temp;
-            currentWeather["minTemp"] = currentWeatherData[cityName].main.temp_min;
-            currentWeather["maxTemp"] = currentWeatherData[cityName].main.temp_max;
-            currentWeather["dt"] = currentWeatherData[cityName].dt;
-
-            props["city"] = cityName;
-            props["currentWeather"] = currentWeather;
-            props["forecastData"] = forecastData[cityName].list;
-            
-
-            weatherBlocks.push(<WeatherBlocks key={this.hashCode(cityName)} {...props}/>);
-        }
-        
-        return (<div style={style}>
-            {weatherBlocks}
-        </div>)
+        )
     }
 }
 
