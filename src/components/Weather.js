@@ -52,26 +52,11 @@ class Weather extends Component {
     populateCurrentWeather(currentWeatherData){
         let weatherBlocks = [];
 
-        for (let i = 0; i < currentWeatherData.cnt; i++) {
-
-            let cityName = currentWeatherData.list[i].name;
-
+        for (let i = 0; i < currentWeatherData.count; i++) {
             let props = {};
 
-            let currentWeather = {};
-
-            currentWeather["icon"] = currentWeatherData.list[i].weather["0"].icon;
-            currentWeather["weatherDescript"] = currentWeatherData.list[i].weather["0"].description
-            currentWeather["sunrise"] = currentWeatherData.list[i].sys.sunrise;
-            currentWeather["sunset"] = currentWeatherData.list[i].sys.sunset;
-            currentWeather["temp"] = currentWeatherData.list[i].main.temp;
-            currentWeather["minTemp"] = currentWeatherData.list[i].main.temp_min;
-            currentWeather["maxTemp"] = currentWeatherData.list[i].main.temp_max;
-            currentWeather["dt"] = currentWeatherData.list[i].dt;
-
-            props["city"] = cityName;
-            props["currentWeather"] = currentWeather;
-            //props["forecastData"] = forecastData[cityName].list;
+            props["city"] = currentWeatherData.list[i].city;
+            props["currentWeather"] = currentWeatherData.list[i].currentWeather;
 
             weatherBlocks.push(<WeatherBlocks key={i} {...props} />);
         }
@@ -97,6 +82,7 @@ class Weather extends Component {
 
         return axios.get("/weather/currentWeather?cityId=" + cityIDs)
             .then(response =>{
+                console.log(response.data)
                 return this.populateCurrentWeather(response.data);
             })
             .catch(function (error) {
@@ -144,17 +130,18 @@ class Weather extends Component {
             .catch(error => {
                 console.log(error);
             });
-            
+
     }
 
 
     render() {
+        console.log(this.state.weatherBlocks);
         return (
-            !this.state.weatherBlocks ? 
+            !this.state.weatherBlocks ?
                 <div style={style}>
                     loading...
                 </div>
-                : 
+                :
                 <div style={style}>
                     {this.state.weatherBlocks}
                 </div>

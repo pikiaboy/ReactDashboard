@@ -34,25 +34,25 @@ function loadHomePage() {
 
   ReactDOM.render(
     <Grid>
-   
+
       <Row className="show-grid">
 
         <Col xs={6}>
           <Clock size="100px" option="time" />
         </Col>
-      
+
         <Col xs={6} style={dateOffset}>
           <Clock size="100px" option="date" />
         </Col>
-      
+
       </Row>
 
-      <Row className="show-grid"> 
+      <Row className="show-grid">
         <Col style={weatherStyle} xs={6} md={6}>
           <Weather cityCodes={configOptions.cityCodes}/>
         </Col>
       </Row>
-   
+
     </Grid>,
     document.getElementById("root")
   );

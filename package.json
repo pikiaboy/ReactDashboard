@@ -29,5 +29,11 @@
     "eject": "react-scripts eject",
     "electron": "electron .",
     "dev": "nf start -p 3000"
-  }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

@@ -90,7 +90,7 @@ class WeatherBlocks extends Component {
                 <Col id="currentWeather" lg={4} md={4} sm={4} xs={4}>
                     <Row className="show-grid">
                         <h2 style={style}>
-                            <img align={"left"} width={40} height={40} src={image} />
+                            <img align={"left"} width={40} height={40} src={image} alt="weatherImage" />
                             <p style={temperatureStyle}>{this.props.currentWeather.temp}˚</p>
                         </h2>
                     </Row>
